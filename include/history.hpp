@@ -1,9 +1,8 @@
-class History
+#include <cstdint>
 
-{
-public:
+class History {
+  public:
     History();
-    virtual ~History();
-    virtual bool empty();
-    virtual bool isEmpty();
+    virtual void add(uint8_t x_i); // Adjusts the history with a new bit
+    virtual void wipe();           // Resets the history to an empty state
 };
