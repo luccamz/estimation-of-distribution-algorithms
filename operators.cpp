@@ -1,7 +1,5 @@
 #include "individual.hpp"
 
-enum DECISION { DOWN, UP, STAY };
-
 Individual::Individual(int n) : bits(n, 0) {}
 
 void mutate(Individual &ind, std::mt19937 &gen) {
