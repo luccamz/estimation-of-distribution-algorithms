@@ -1,8 +1,10 @@
+#pragma once
 #include "frequency_vector.hpp"
 #include "individual.hpp"
+#include <functional>
 
 using FitnessFunction = double (*)(const Individual &);
-using TerminationCriterion = bool (*)(int curr_evaluations, double fitness);
+using TerminationCriterion = std::function<bool(int, double)>;
 struct BenchmarkResult {
     int evaluations;
     double best_fitness;
