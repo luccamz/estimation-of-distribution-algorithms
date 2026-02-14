@@ -4,88 +4,132 @@ import platform
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from matplotlib.ticker import ScalarFormatter
 from pathlib import Path
+import multiprocessing
 
 # --- Configuration ---
 BUILD_DIR = Path("build")
 RESULTS_FILE = Path("results.csv")
 PLOTS_DIR = Path("plots")
-# Name of your executable defined in CMakeLists.txt (add_executable(algo_exec ...))
 EXECUTABLE_NAME = "algo_exec"
+PROBLEMS = ["OneMax", "LeadingOnes", "JumpK2", "JumpK3"]
 
 
-def run_command(command, cwd=None, capture_output=False):
-    """Runs a shell command and handles errors."""
+def run_command(command, cwd=None):
+    """Runs a shell command and checks for errors."""
     try:
-        # On Windows, shell=True is often needed for cmake
         is_windows = platform.system() == "Windows"
-        if capture_output:
-            return subprocess.check_output(command, cwd=cwd, shell=is_windows)
-        else:
-            subprocess.check_call(command, cwd=cwd, shell=is_windows)
+        subprocess.check_call(command, cwd=cwd, shell=is_windows)
     except subprocess.CalledProcessError as e:
         print(f"Error executing command: {' '.join(command)}")
-        print(f"Return code: {e.returncode}")
         sys.exit(1)
 
 
 def build_project():
-    """Configures and builds the C++ project using CMake."""
+    """Configures and builds the C++ project."""
     print(f"--- Building Project in {BUILD_DIR} ---")
     BUILD_DIR.mkdir(exist_ok=True)
 
-    # 1. Configure (Release mode is critical for benchmarking speed)
     cmd_config = ["cmake", "-DCMAKE_BUILD_TYPE=Release", ".."]
     run_command(cmd_config, cwd=BUILD_DIR)
 
-    # 2. Build
     cmd_build = ["cmake", "--build", ".", "--config", "Release"]
     run_command(cmd_build, cwd=BUILD_DIR)
     print("Build successful.\n")
 
 
 def find_executable():
-    """Locates the compiled binary across different OS/CMake layouts."""
+    """Locates the compiled binary."""
     exe_name = (
         f"{EXECUTABLE_NAME}.exe" if platform.system() == "Windows" else EXECUTABLE_NAME
     )
 
-    # Common paths where CMake might put the binary
     possible_paths = [
         BUILD_DIR / exe_name,
         BUILD_DIR / "src" / exe_name,
         BUILD_DIR / "Release" / exe_name,
-        BUILD_DIR / "Debug" / exe_name,
     ]
-
     for path in possible_paths:
         if path.exists():
             return path.absolute()
 
-    # Fallback: recursive search
     found = list(BUILD_DIR.rglob(exe_name))
     if found:
         return found[0].absolute()
 
-    print(f"Error: Could not find executable '{exe_name}' in {BUILD_DIR}")
-    sys.exit(1)
+    sys.exit(f"Error: Could not find executable '{exe_name}'")
+
+
+def run_single_benchmark(problem):
+    """Worker function to run a single benchmark."""
+    exe_path = find_executable()
+    print(f"Starting benchmark: {problem}...")
+    try:
+        result = subprocess.check_output([str(exe_path), problem], text=True)
+        print(f"Finished: {problem}")
+        return result.strip().splitlines()
+    except subprocess.CalledProcessError as e:
+        print(f"FAILED: {problem} - {e}")
+        return []
 
 
 def run_experiments():
-    """Runs the C++ executable and saves stdout to CSV."""
-    exe_path = find_executable()
-    print(f"--- Running Experiments using {exe_path.name} ---")
-    print("This may take a few minutes depending on 'repetitions' and 'N'...")
+    """Runs benchmarks in parallel."""
+    print(f"--- Running Experiments (Parallel) ---")
 
-    with open(RESULTS_FILE, "w") as outfile:
-        # Run the executable and pipe stdout directly to the file
-        subprocess.check_call([str(exe_path)], stdout=outfile)
+    num_workers = min(len(PROBLEMS), multiprocessing.cpu_count())
+    print(f"Using {num_workers} parallel workers.")
 
-    print(f"Experiments finished. Data saved to {RESULTS_FILE}\n")
+    all_output_lines = []
+
+    with multiprocessing.Pool(num_workers) as pool:
+        results = pool.map(run_single_benchmark, PROBLEMS)
+
+        for lines in results:
+            if not lines:
+                continue
+            if not all_output_lines:
+                all_output_lines.extend(lines)
+            elif len(lines) > 1:
+                all_output_lines.extend(lines[1:])
+
+    with open(RESULTS_FILE, "w") as f:
+        f.write("\n".join(all_output_lines))
+    print(f"\nData saved to {RESULTS_FILE}\n")
+
+
+def format_math_label(row):
+    """Creates a Mathtext-formatted label for the legend."""
+    algo = row["Algorithm"]
+    raw_label = row[
+        "Label"
+    ]  # Comes from C++ (e.g., "K ~ 0.5 sqrt(n) ln(n)", "eps=1.0")
+
+    # 1. Clean Algorithm Name
+    # Replace "sig-cGA-" with "sig-cGA " and underscores with spaces
+    clean_algo = algo.replace("sig-cGA-", "sig-cGA ").replace("_", " ")
+
+    if "1+1" in algo:
+        # Use simple mathtext for (1+1)
+        return r"$(1+1)$ EA"
+
+    # 2. Convert raw label parameters to Python Mathtext
+    # We wrap the math parts in $...$
+
+    tex_label = raw_label
+    tex_label = tex_label.replace("eps=", r"\epsilon=")
+    tex_label = tex_label.replace("K ~", r"K \approx")  # Use approx symbol
+    tex_label = tex_label.replace("sqrt(n)", r"\sqrt{n}")
+    tex_label = tex_label.replace("ln(n)", r"\ln(n)")
+    tex_label = tex_label.replace("ln^2(n)", r"\ln^2(n)")
+
+    # Return formatted string: "sig-cGA ($ \epsilon=1.0 $)"
+    return rf"{clean_algo} (${tex_label}$)"
 
 
 def generate_plots():
-    """Generates scientific plots from the CSV data."""
+    """Generates PDF plots using internal Mathtext rendering."""
     print("--- Generating Plots ---")
     if not RESULTS_FILE.exists():
         sys.exit("Error: No results file found.")
@@ -94,73 +138,96 @@ def generate_plots():
 
     try:
         df = pd.read_csv(RESULTS_FILE)
-    except Exception as e:
-        sys.exit(f"Failed to read CSV: {e}")
+    except pd.errors.EmptyDataError:
+        sys.exit("Error: Results file is empty.")
 
-    # Set style
-    sns.set_theme(style="whitegrid", context="paper", font_scale=1.2)
+    # Apply formatting
+    df["LegendLabel"] = df.apply(format_math_label, axis=1)
 
-    # --- Plot 1: Runtime Scaling (Successes Only) ---
-    success_df = df[df["Success"] == 1].copy()
+    # Configure Seaborn/Matplotlib for internal Math rendering
+    # 'mathtext.fontset': 'cm' makes the math look like LaTeX (Computer Modern)
+    sns.set_theme(
+        style="whitegrid",
+        context="paper",
+        font_scale=1.2,
+        rc={"mathtext.fontset": "cm", "font.family": "serif"},
+    )
 
-    if success_df.empty:
-        print("Warning: No successful runs found. Skipping runtime plots.")
-    else:
-        # We use a FacetGrid (relplot) to separate problems because they have
-        # vastly different Y-scales (Jump is exponential, OneMax is linear-ish)
-        g = sns.relplot(
-            data=success_df,
-            x="N",
-            y="Evaluations",
-            hue="Algorithm",
-            col="Problem",  # Separate plot for each problem
-            kind="line",
-            marker="o",
-            col_wrap=2,  # Wrap to next line if too many problems
-            height=4,
-            aspect=1.2,
-            facet_kws={"sharey": False, "sharex": False},  # Independent axes
-        )
+    unique_problems = df["Problem"].unique()
 
-        g.set_axis_labels("Problem Size (N)", "Evaluations")
-        g.set_titles("{col_name}")
+    for problem in unique_problems:
+        print(f"Plotting {problem}...")
+        prob_df = df[df["Problem"] == problem]
+        unique_n = sorted(prob_df["N"].unique())
 
-        # Set Log-Log scale for all plots (standard for algorithmic complexity)
-        for ax in g.axes.flat:
+        # --- Plot 1: Runtime Scaling ---
+        success_df = prob_df[prob_df["Success"] == 1]
+
+        if not success_df.empty:
+            plt.figure(figsize=(9, 6))
+            ax = sns.lineplot(
+                data=success_df,
+                x="N",
+                y="Evaluations",
+                hue="LegendLabel",
+                style="LegendLabel",
+                markers=True,
+                dashes=False,
+                errorbar="sd",
+                linewidth=2.0,
+                markersize=8,
+                alpha=0.9,
+            )
+
+            # Using r-strings for titles/labels to support simple math if needed
+            ax.set_title(rf"Runtime Scaling: {problem}", pad=15, fontweight="bold")
+            ax.set_ylabel("Evaluations (Log Scale)")
+            ax.set_xlabel(r"Problem Size ($N$)")
             ax.set_xscale("log")
             ax.set_yscale("log")
-            ax.grid(True, which="both", ls="-", alpha=0.2)
 
-        save_path = PLOTS_DIR / "runtime_scaling.pdf"
-        plt.savefig(save_path)
-        print(f"Saved: {save_path}")
+            # Fix X-axis ticks
+            ax.set_xticks(unique_n)
+            ax.get_xaxis().set_major_formatter(ScalarFormatter())
+            ax.minorticks_off()
 
-    # --- Plot 2: Success Rates ---
-    # Calculate success rate per configuration
-    success_rates = (
-        df.groupby(["Algorithm", "Problem", "N"])["Success"].mean().reset_index()
-    )
+            # Place legend outside
+            plt.legend(
+                bbox_to_anchor=(1.02, 1),
+                loc="upper left",
+                borderaxespad=0,
+                title="Algorithm Configuration",
+            )
+            plt.grid(True, which="major", ls="-", alpha=0.5)
+            plt.tight_layout()
+            plt.savefig(PLOTS_DIR / f"{problem}_scaling.pdf")
+            plt.close()
 
-    g2 = sns.catplot(
-        data=success_rates,
-        x="N",
-        y="Success",
-        hue="Algorithm",
-        col="Problem",
-        kind="bar",
-        col_wrap=3,
-        height=4,
-        aspect=1,
-        sharex=False,
-    )
+        # --- Plot 2: Success Rates ---
+        plt.figure(figsize=(9, 6))
+        success_rates = (
+            prob_df.groupby(["LegendLabel", "N"])["Success"].mean().reset_index()
+        )
 
-    g2.set_axis_labels("Problem Size (N)", "Success Rate (0-1)")
-    g2.set_titles("{col_name}")
-    g2.set(ylim=(0, 1.1))  # Fix y-axis to 0-100%
+        ax = sns.barplot(
+            data=success_rates, x="N", y="Success", hue="LegendLabel", alpha=0.9
+        )
 
-    save_path_2 = PLOTS_DIR / "success_rates.pdf"
-    plt.savefig(save_path_2)
-    print(f"Saved: {save_path_2}")
+        ax.set_title(rf"Success Rates: {problem}", pad=15, fontweight="bold")
+        ax.set_ylabel("Success Rate")
+        ax.set_ylim(0, 1.05)
+        ax.set_xlabel(r"Problem Size ($N$)")
+        plt.legend(
+            bbox_to_anchor=(1.02, 1),
+            loc="upper left",
+            borderaxespad=0,
+            title="Algorithm Configuration",
+        )
+        plt.tight_layout()
+        plt.savefig(PLOTS_DIR / f"{problem}_success.pdf")
+        plt.close()
+
+    print(f"Plots saved to {PLOTS_DIR}/")
 
 
 if __name__ == "__main__":
