@@ -23,7 +23,7 @@ sigcGA::Decision sigcGA::sig(double p, HistoryTriple &H) {
     auto [m, h0, h1] = H;
     if (p <= 0.5 && h1 >= m * p + eps * std::max(std::sqrt(m * p * ln_n), ln_n))
         return Decision::UP;
-    else if (p >= 0.5 && h0 >= m * p + eps * std::max(std::sqrt(m * p * ln_n), ln_n))
+    else if (p >= 0.5 && h0 >= m * (1 - p) + eps * std::max(std::sqrt(m * (1 - p) * ln_n), ln_n))
         return Decision::DOWN;
     return Decision::STAY;
 }
