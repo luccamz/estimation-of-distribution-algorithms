@@ -1,6 +1,6 @@
 # Estimation of Distribution Algorithms (EDAs)
 
-This repository contains C++ implementations of **$(1+1)$ EA**, **Compact Genetic Algorithm (cGA)**, and **Significance-Based cGA (sig-cGA)**. These algorithms are evaluated on **$\textsc{OneMax}$**, **$\textsc{LeadingOnes}$**, and **$\textsc{Jump}(k)$** benchmarks to analyze runtime performance and scalability. Conducted for the **CSC_42021_EP** course.
+This repository contains C++ implementations of **$(1+1)$ EA**, **Compact Genetic Algorithm (cGA)**, and **Significance-Based cGA (sig-cGA)**. These algorithms are evaluated on **$OneMax$**, **$LeadingOnes$**, and **$Jump_k$** benchmarks to analyze runtime performance and scalability. Conducted for the **CSC_42021_EP** course.
 
 ## Structure
 
@@ -52,9 +52,9 @@ cmake --build . --config Release
   * **sig-cGA**: Reduces noise using history. Variants: *Simplified* (counts) and *Original* (subsequences).
 
 * **Benchmarks**:
-  * **$\textsc{OneMax}$**:
-  * **$\textsc{LeadingOnes}$**:
-  * **$\textsc{Jump}(k)$**: Multimodal valley of size $k$.
+  * **$OneMax$**:
+  * **$LeadingOnes$**:
+  * **$Jump_k$**: Multimodal valley of size $k$.
 
 ## Results
 
