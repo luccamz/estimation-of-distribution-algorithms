@@ -1,21 +1,15 @@
-#include "history.hpp"
+#include "simplified_history.hpp"
 #include <cstdint>
 
-class SimplifiedHistory : public History {
+SimplifiedHistory::SimplifiedHistory() : h1(0), h0(0), m(0) {}
 
-  public:
-    int h1, h0, m;
+void SimplifiedHistory::add(uint8_t b) {
+    m++;
+    b ? h1++ : h0++;
+}
 
-    SimplifiedHistory() : h1(0), h0(0), m(0) {}
-
-    void add(uint8_t b) {
-        m++;
-        b ? h1++ : h0++;
-    }
-
-    void wipe() {
-        h1 = 0;
-        h0 = 0;
-        m = 0;
-    }
-};
+void SimplifiedHistory::wipe() {
+    h1 = 0;
+    h0 = 0;
+    m = 0;
+}

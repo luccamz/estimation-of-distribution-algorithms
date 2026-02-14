@@ -1,20 +1,18 @@
 #include "individual.hpp"
-#include <algorithm>
 #include <random>
 #include <vector>
 
-class FrequencyVector {
-  public:
-    std::vector<double> p;
-    int n;
-
+struct FrequencyVector {
+    // Instantiate a standard frequency vector of size n
+    // with all freqs set to 1/2
     FrequencyVector(int n_size) : n(n_size), p(n_size, 0.5) {}
 
-    // Restricts frequencies to [1/n, 1 - 1/n] as per Equation 2
-    void restrict_frequency(int i) {
+    // Updates frequency at index i and restricts to [1/n, 1 - 1/n] as per
+    // Equation 2
+    void update_frequency(int i, double freq) {
         double lower = 1.0 / n;
         double upper = 1.0 - lower;
-        p[i] = std::max(std::min(p[i], upper), lower);
+        p[i] = std::max(std::min(freq, upper), lower);
     }
 
     // Samples an individual based on independent probabilities
@@ -26,4 +24,8 @@ class FrequencyVector {
         }
         return ind;
     }
+
+  private:
+    std::vector<double> p;
+    int n;
 };
