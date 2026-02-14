@@ -1,0 +1,58 @@
+{
+    "common_settings": {
+        "repetitions": 30,
+        "n_values": [
+            100,
+            200
+        ]
+    },
+    "algorithms": {
+        "1+1_EA": {
+            "enabled": true
+        },
+        "cGA": {
+            "enabled": true,
+            "parameter_name": "K",
+            "multipliers": [
+                0.25,
+                0.5,
+                1.0
+            ]
+        },
+        "sig-cGA": {
+            "enabled": true,
+            "parameter_name": "epsilon",
+            "values": [
+                1.0,
+                5.0,
+                12.0
+            ],
+            "variants": [
+                "Original",
+                "Simplified"
+            ]
+        }
+    },
+    "problems": {
+        "OneMax": {
+            "budget_type": "linear",
+            "budget_multiplier": 100,
+            "k_formula": "sqrt(n) * log(n)"
+        },
+        "LeadingOnes": {
+            "budget_type": "quadratic",
+            "budget_multiplier": 15,
+            "k_formula": "n * (log(n)**2)"
+        },
+        "JumpK2": {
+            "budget_type": "fixed",
+            "budget_fixed": 500000,
+            "k_formula": "sqrt(n) * log(n)"
+        },
+        "JumpK3": {
+            "budget_type": "fixed",
+            "budget_fixed": 1000000,
+            "k_formula": "sqrt(n) * log(n)"
+        }
+    }
+}
