@@ -111,4 +111,4 @@ Example snippet:
 
 * **OneMax**: Linear slope, $O(n \log n)$ difficulty.
 * **LeadingOnes**: Gradient only on prefix, $O(n^2)$ difficulty.
-* **$Jump_K$**: Valley crossing problem. $O(n^k)$ difficulty.
+* **Jump${}_K$**: Valley crossing problem. $O(n^k)$ difficulty.
