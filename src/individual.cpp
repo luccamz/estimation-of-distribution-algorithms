@@ -2,7 +2,7 @@
 
 Individual Individual::mutate(std::mt19937 &gen) {
     int n = this->bits.size();
-    auto child = copy(); // Create a copy of the individual to mutate
+    auto child = *this; // Create a copy of the individual to mutate
 
     double prob = 1.0 / n; // Standard bit mutation probability
     std::geometric_distribution<int> geo(prob);
@@ -12,6 +12,6 @@ Individual Individual::mutate(std::mt19937 &gen) {
         child.bits[next_bit] = 1 - this->bits[next_bit];
         next_bit += 1 + geo(gen); // O(1) jump logic
     }
-    child.fitness = nullptr; // Reset fitness as the child is mutated
+    child.fitness = -1.0; // Reset fitness as the child is mutated
     return child;
 }

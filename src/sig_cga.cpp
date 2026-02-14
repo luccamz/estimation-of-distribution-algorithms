@@ -40,12 +40,12 @@ BenchmarkResult sigcGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1
     while (!tc(fitness_evals, curr_fitness)) {
         xt1 = pt.sample(gen);
         auto xt2 = pt.sample(gen);
-        *xt1.fitness = f(xt1);
-        *xt2.fitness = f(xt2);
+        xt1.fitness = f(xt1);
+        xt2.fitness = f(xt2);
         fitness_evals += 2; // properly count number of f calls
-        if (*xt1.fitness < *xt2.fitness)
+        if (xt1.fitness < xt2.fitness)
             // std::swap(xt1, xt2);
-            xt1 = xt2.copy();
+            xt1 = xt2;
 
         int i = 0;
         while (i < n) {
@@ -66,7 +66,7 @@ BenchmarkResult sigcGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1
             i++;
         }
 
-        curr_fitness = *xt1.fitness;
+        curr_fitness = xt1.fitness;
     }
     return BenchmarkResult{fitness_evals, curr_fitness};
 }

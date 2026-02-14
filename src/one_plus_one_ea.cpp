@@ -7,12 +7,14 @@ BenchmarkResult OnePlusOneEA::run(FitnessFunction f, TerminationCriterion tc, st
     auto p = FrequencyVector(n);
     auto xt = p.sample(gen); // individual chosen uniformly at random
 
-    *xt.fitness = f(xt);
+    xt.fitness = f(xt);
     int fitness_evals = 1;
-    while (!tc(fitness_evals, *xt.fitness)) {
+    while (!tc(fitness_evals, xt.fitness)) {
         auto yt = xt.mutate(gen); // apply standard bit mutation
-        xt = f(yt) >= *xt.fitness ? yt : xt;
+        yt.fitness = f(yt);
         fitness_evals++;
+
+        xt = yt.fitness >= xt.fitness ? yt : xt;
     }
-    return BenchmarkResult{fitness_evals, f(xt)};
+    return BenchmarkResult{fitness_evals, xt.fitness};
 }
