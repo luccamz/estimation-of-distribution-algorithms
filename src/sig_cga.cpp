@@ -67,7 +67,7 @@ BenchmarkResult sigcGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1
         curr_fitness = f(xt1);
         t++;
     }
-    return BenchmarkResult{0, 0.0}; // Placeholder implementation
+    return BenchmarkResult{t, curr_fitness};
 }
 
 sigcGA::~sigcGA() {
