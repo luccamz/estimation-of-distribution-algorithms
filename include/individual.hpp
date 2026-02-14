@@ -6,12 +6,15 @@
 struct Individual {
     std::vector<uint8_t> bits;
 
-    Individual(int n) : bits(n, 0) {};
+    double *fitness;
+
+    Individual(int n) : bits(n, 0), fitness(nullptr) {};
 
     // copies individual to a new one, useful for mutation
     Individual copy() const {
         Individual ind(bits.size());
         ind.bits = bits;
+        *ind.fitness = *fitness;
         return ind;
     }
 

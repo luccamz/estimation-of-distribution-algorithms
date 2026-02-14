@@ -12,5 +12,6 @@ Individual Individual::mutate(std::mt19937 &gen) {
         child.bits[next_bit] = 1 - this->bits[next_bit];
         next_bit += 1 + geo(gen); // O(1) jump logic
     }
+    child.fitness = nullptr; // Reset fitness as the child is mutated
     return child;
 }

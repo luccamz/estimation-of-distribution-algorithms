@@ -30,18 +30,20 @@ sigcGA::Decision sigcGA::sig(double p, HistoryTriple &H) {
 
 BenchmarkResult sigcGA::run(FitnessFunction f, TerminationCriterion tc, std::mt19937 &gen) {
     // Algorithm 1
-    int t = 0;
+    int fitness_evals = 0;
     int n = histories.size();
     auto pt = FrequencyVector(n);
     // empty the histories
     std::for_each(histories.begin(), histories.end(), [](History *h) { h->wipe(); });
     auto xt1 = Individual(n);
-    auto curr_fitness = f(xt1);
-    while (!tc(t, curr_fitness)) {
+    auto curr_fitness = 0.0;
+    while (!tc(fitness_evals, curr_fitness)) {
         xt1 = pt.sample(gen);
         auto xt2 = pt.sample(gen);
-
-        if (f(xt1) < f(xt2))
+        *xt1.fitness = f(xt1);
+        *xt2.fitness = f(xt2);
+        fitness_evals += 2; // properly count number of f calls
+        if (*xt1.fitness < *xt2.fitness)
             // std::swap(xt1, xt2);
             xt1 = xt2.copy();
 
@@ -64,10 +66,9 @@ BenchmarkResult sigcGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1
             i++;
         }
 
-        curr_fitness = f(xt1);
-        t++;
+        curr_fitness = *xt1.fitness;
     }
-    return BenchmarkResult{t, curr_fitness};
+    return BenchmarkResult{fitness_evals, curr_fitness};
 }
 
 sigcGA::~sigcGA() {
