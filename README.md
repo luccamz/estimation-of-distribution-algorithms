@@ -104,11 +104,11 @@ Example snippet:
 1. **Algorithms**:
 
 * **sig-cGA**: Implements **Equation (3)** for significance testing and **Algorithm 1** from the project description. Includes both *Original* (linked list) and *Simplified* (counter) history variants.
-* **cGA**: Standard frequency update rule $p_i^{(t+1)} \leftarrow p_i^{(t)} + 1/K (x_i^{(t,1)}-x_i^{(t,2)})$.
+* **cGA**: Standard frequency update rule $p_i^{(t+1)} \leftarrow p_i^{(t)} + (x_i^{(t,1)}-x_i^{(t,2)}) / K$.
 * **(1+1) EA**: Uses standard bit mutation with geometric distribution optimization for $O(n \log n)$ runtime.
 
 2. **Problems**:
 
 * **OneMax**: Linear slope, $O(n \log n)$ difficulty.
 * **LeadingOnes**: Gradient only on prefix, $O(n^2)$ difficulty.
-* **Jump${}_K$**: Valley crossing problem. $O(n^k)$ difficulty.
+* **JumpK**: Valley crossing problem. $O(n^k)$ difficulty.
