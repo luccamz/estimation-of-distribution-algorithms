@@ -9,7 +9,6 @@ from pathlib import Path
 import multiprocessing
 import json
 import math
-import time
 
 # --- Configuration ---
 BUILD_DIR = Path("build")
@@ -71,9 +70,13 @@ def generate_tasks():
 
     tasks = []
     reps = config["common_settings"]["repetitions"]
-    n_values = config["common_settings"]["n_values"]
 
     for prob_name, prob_settings in config["problems"].items():
+        # USE PROBLEM SPECIFIC N IF AVAILABLE
+        n_values = prob_settings.get(
+            "n_values", config["common_settings"].get("n_values", [100, 200])
+        )
+
         for n in n_values:
             max_evals = calculate_budget(n, prob_settings)
 
@@ -142,12 +145,8 @@ def generate_tasks():
 
 
 def run_worker(task):
-    """Worker function: Runs one config and returns the CSV lines."""
     exe_path = find_executable()
     cmd = [str(exe_path)] + task["args"]
-
-    # We do NOT print here to avoid race conditions/garbled text in parallel output.
-    # Instead, we return success status to the main loop.
     try:
         output = subprocess.check_output(cmd, text=True).strip()
         lines = output.splitlines()
@@ -161,8 +160,6 @@ def run_experiments():
     print(f"--- Running Experiments from {CONFIG_FILE} ---")
     tasks = generate_tasks()
     total_tasks = len(tasks)
-
-    # Dynamic Parallelization: Use all available cores
     num_workers = min(multiprocessing.cpu_count(), total_tasks)
     print(f"Generated {total_tasks} tasks.")
     print(f"Running on {num_workers} parallel threads...\n")
@@ -172,7 +169,6 @@ def run_experiments():
         "Algorithm,Problem,N,Param,Repetition,Evaluations,Success,BestFitness,Label"
     )
 
-    # Use imap_unordered to get results as they finish (Real-time progress)
     with multiprocessing.Pool(num_workers) as pool:
         for i, (task_id, lines) in enumerate(pool.imap_unordered(run_worker, tasks), 1):
             if lines:
@@ -194,7 +190,6 @@ def generate_plots():
 
     df = pd.read_csv(RESULTS_FILE)
 
-    # Setup internal math rendering (Computer Modern font)
     sns.set_theme(
         style="whitegrid",
         context="paper",
@@ -228,9 +223,12 @@ def generate_plots():
             ax.set_title(rf"Runtime Scaling: {problem}", pad=15, fontweight="bold")
             ax.set_xscale("log")
             ax.set_yscale("log")
+
+            # Smart ticks: only show relevant N values
             ax.set_xticks(unique_n)
             ax.get_xaxis().set_major_formatter(ScalarFormatter())
             ax.minorticks_off()
+
             plt.legend(
                 bbox_to_anchor=(1.02, 1), loc="upper left", title="Configuration"
             )
@@ -241,7 +239,6 @@ def generate_plots():
 
         # Success Plot
         plt.figure(figsize=(10, 6))
-        # Ensure we count all rows including failures
         success_rates = prob_df.groupby(["Label", "N"])["Success"].mean().reset_index()
         ax = sns.barplot(data=success_rates, x="N", y="Success", hue="Label")
         ax.set_title(rf"Success Rates: {problem}", pad=15, fontweight="bold")

@@ -1,10 +1,6 @@
 {
     "common_settings": {
-        "repetitions": 30,
-        "n_values": [
-            100,
-            200
-        ]
+        "repetitions": 30
     },
     "algorithms": {
         "1+1_EA": {
@@ -35,23 +31,41 @@
     },
     "problems": {
         "OneMax": {
+            "n_values": [
+                100,
+                200,
+                500
+            ],
             "budget_type": "linear",
             "budget_multiplier": 100,
             "k_formula": "sqrt(n) * log(n)"
         },
         "LeadingOnes": {
+            "n_values": [
+                100,
+                200,
+                300
+            ],
             "budget_type": "quadratic",
             "budget_multiplier": 15,
             "k_formula": "n * (log(n)**2)"
         },
         "JumpK2": {
+            "n_values": [
+                100,
+                200
+            ],
             "budget_type": "fixed",
-            "budget_fixed": 500000,
+            "budget_fixed": 200000,
             "k_formula": "sqrt(n) * log(n)"
         },
         "JumpK3": {
+            "n_values": [
+                100,
+                200
+            ],
             "budget_type": "fixed",
-            "budget_fixed": 1000000,
+            "budget_fixed": 500000,
             "k_formula": "sqrt(n) * log(n)"
         }
     }
