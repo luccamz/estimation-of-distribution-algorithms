@@ -3,6 +3,10 @@
 #include <vector>
 
 struct FrequencyVector {
+
+    std::vector<double> p;
+    int n;
+
     // Instantiate a standard frequency vector of size n
     // with all freqs set to 1/2
     FrequencyVector(int n_size) : n(n_size), p(n_size, 0.5) {}
@@ -24,8 +28,4 @@ struct FrequencyVector {
         }
         return ind;
     }
-
-  private:
-    std::vector<double> p;
-    int n;
 };

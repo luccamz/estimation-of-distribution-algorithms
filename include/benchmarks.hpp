@@ -1,8 +1,6 @@
 #include "individual.hpp"
 
-inline double one_max(const Individual &ind) {
-    return std::accumulate(ind.bits.begin(), ind.bits.end(), 0);
-}
+inline double one_max(const Individual &ind) { return std::accumulate(ind.bits.begin(), ind.bits.end(), 0); }
 
 inline double leading_ones(const Individual &ind) {
     int i = 0;

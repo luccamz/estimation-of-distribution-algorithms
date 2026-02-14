@@ -4,11 +4,13 @@
 class SimplifiedHistory : public History {
 
   public:
-    int h1, h0, m;
+    HistoryTriple H;
 
     SimplifiedHistory();
 
     void add(uint8_t b) override;
 
     void wipe() override;
+
+    std::vector<HistoryTriple> get_subsequences() const override;
 };

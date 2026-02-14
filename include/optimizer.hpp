@@ -10,6 +10,5 @@ struct BenchmarkResult {
 class Optimizer {
   public:
     virtual ~Optimizer() = default;
-    virtual BenchmarkResult run(FitnessFunction fitness_func,
-                                TerminationCriterion termination_criterion) = 0;
+    virtual BenchmarkResult run(FitnessFunction f, TerminationCriterion tc, std::mt19937 &gen) = 0;
 };
