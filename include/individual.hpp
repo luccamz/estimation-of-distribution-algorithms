@@ -16,5 +16,5 @@ struct Individual {
     }
 
     // implements standard bit mutation with O(1) jumps
-    Individual mutate(Individual &ind, std::mt19937 &gen);
+    Individual mutate(std::mt19937 &gen);
 };
