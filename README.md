@@ -1,62 +1,114 @@
 # Estimation of Distribution Algorithms (EDAs)
 
-This repository contains C++ implementations of **$(1+1)$ EA**, **Compact Genetic Algorithm (cGA)**, and **Significance-Based cGA (sig-cGA)**. These algorithms are evaluated on **$OneMax$**, **$LeadingOnes$**, and **$Jump_k$** benchmarks to analyze runtime performance and scalability. Conducted for the **CSC_42021_EP** course.
+This repository contains C++ implementations of:
 
-## Structure
+* **(1+1) EA**: A baseline evolutionary algorithm.
+* **Compact Genetic Algorithm (cGA)**: A standard estimation-of-distribution algorithm.
+* **Significance-Based cGA (sig-cGA)**: An advanced EDA that reduces noise using history.
 
-```text
-.
-├── include/              # Interfaces (cga.hpp, sig_cga.hpp, etc.)
-├── src/                  # Implementation (main.cpp, *.cpp)
-├── plots/                # Output PDF plots
-├── reproduce_results.py  # Automation script
-├── requirements.txt      # Python dependencies
-└── results.csv           # Generated data
-```
+These algorithms are evaluated on **OneMax**, **LeadingOnes**, and **JumpK** benchmarks.
 
-## Requirements
+## 📂 Project Structure
 
-* **C++**: Compiler supporting **C++17**, **CMake 3.10+**.
-* **Python**: **3.8+** with `pandas`, `seaborn`, `matplotlib`.
+* `src/`: C++ source code (Implementations).
+* `include/`: Header files (Interfaces).
+* `reproduce_results.py`: **Main entry point**. Python automation script that builds the C++ code, runs parallel experiments, and generates plots.
+* `experiments_config.json`: Configuration file to control problem sizes, algorithms, and budgets.
+* `plots/`: Generated PDF plots appear here.
+* `results.csv`: Raw experimental data.
 
-## Usage
+## 🚀 Quick Start (Recommended)
 
-### Option 1: Automated Pipeline (Recommended)
+The easiest way to run the project is using the Python automation script, which handles compilation (via CMake) and parallel execution.
 
-Builds the project, runs benchmarks, and generates plots.
+### Prerequisites
 
-```bash
-# 1. Setup Environment
-python -m venv venv
-source venv/bin/activate  # Windows: .\venv\Scripts\activate
-pip install -r requirements.txt
+* **Python 3.8+**
+* **CMake 3.10+**
+* **C++ Compiler** (GCC, Clang, or MSVC) supporting C++17.
 
-# 2. Run Pipeline
-python reproduce_results.py
-```
+### Installation & Run
 
-### Option 2: Manual Build
+1. **Set up Python Environment**
+
+    ```bash
+    # Linux/macOS
+    python3 -m venv venv
+    source venv/bin/activate
+
+    # Windows (PowerShell)
+    python -m venv venv
+    .\venv\Scripts\Activate.ps1
+    ```
+
+2. **Install Dependencies**
+
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+3. **Run Experiments**
+    This command will build the C++ project, run benchmarks in parallel, and generate PDF plots.
+
+    ```bash
+    python reproduce_results.py
+    ```
+
+---
+
+## 🛠 Manual Build Instructions
+
+If you prefer to compile and run the C++ executable manually:
+
+### Linux / macOS
 
 ```bash
 mkdir build && cd build
 cmake -DCMAKE_BUILD_TYPE=Release ..
-cmake --build . --config Release
-./algo_exec > ../results.csv
+make
+# Run specific benchmark: ./algo_exec <Algo> <Problem> <N> <Param> <Reps> <Budget>
+./algo_exec cGA OneMax 100 23.5 1 10000
 ```
 
-## Algorithms & Benchmarks
+### Windows
 
-* **Algorithms**:
-  * **$(1+1)$ EA**: Baseline evolutionary algorithm.
-  * **cGA**: Standard compact Genetic Algorithm.
-  * **sig-cGA**: Reduces noise using history. Variants: *Simplified* (counts) and *Original* (subsequences).
+```powershell
+mkdir build; cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --config Release
+# Executable is usually in Release\algo_exec.exe
+.\Release\algo_exec.exe cGA OneMax 100 23.5 1 10000
+```
 
-* **Benchmarks**:
-  * **$OneMax$**:
-  * **$LeadingOnes$**:
-  * **$Jump_k$**: Multimodal valley of size $k$.
+---
 
-## Results
+## ⚙️ Configuration (`experiments_config.json`)
 
-* **Data**: `results.csv` contains raw runtime metrics.
-* **Plots**: `plots/` contains scaling analysis (`runtime_scaling.pdf`) and success probabilities (`success_rates.pdf`).
+You can modify experiment parameters without changing code by editing `experiments_config.json`.
+
+* **`common_settings`**: Global settings like repetitions.
+* **`algorithms`**: Enable/disable algorithms or change their parameters (e.g., `K` multipliers for cGA, `epsilon` for sig-cGA).
+* **`problems`**: Define problem sizes (`n_values`), budgets, and difficulty formulas.
+
+Example snippet:
+
+```json
+"cGA": {
+    "enabled": true,
+    "multipliers": [0.25, 0.5, 1.0] // Will test K = 0.25*Base, 0.5*Base...
+}
+```
+
+## 📊 Benchmarks & Algorithms Details
+
+1. **Algorithms**:
+
+* **sig-cGA**: Implements **Equation (3)** for significance testing and **Algorithm 1** from the project description. Includes both *Original* (linked list) and *Simplified* (counter) history variants.
+* **cGA**: Standard frequency update rule $p_i \leftarrow p_i \pm 1/K$.
+* **(1+1) EA**: Uses standard bit mutation with geometric distribution optimization for $O(n \log n)$ runtime.
+
+2. **Problems**:
+
+* **OneMax**: Linear slope, $O(n \log n)$ difficulty.
+* **LeadingOnes**: Gradient only on prefix, $O(n^2)$ difficulty.
+* **JumpK**: Valley crossing problem. $2^{n^{\Omega(1)}}$ difficulty for constant $k$, and $\Omega(n^2)$ for $k=O(1)$? (Adjust as needed.)

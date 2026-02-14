@@ -18,11 +18,19 @@ sigcGA::sigcGA(int prob_size, double eps_val, bool simplified_history) {
 }
 
 sigcGA::Decision sigcGA::sig(double p, HistoryTriple &H) {
-    // As per equation (3)
+    // Implements Equation (3) from the pdf.
+    // We compare the number of observed 1s (or 0s) against the expected mean
+    // plus a deviation term based on the Chernoff bound.
+
     auto ln_n = std::log(histories.size());
     auto [m, h0, h1] = H;
+
+    // Case 1: Frequency is low (<= 0.5), check for significant increase (UP)
+    // Deviation term: epsilon * max(sqrt(variance * ln n), ln n)
     if (p <= 0.5 && h1 >= m * p + eps * std::max(std::sqrt(m * p * ln_n), ln_n))
         return Decision::UP;
+
+    // Case 2: Frequency is high (>= 0.5), check for significant decrease (DOWN)
     else if (p >= 0.5 && h0 >= m * (1 - p) + eps * std::max(std::sqrt(m * (1 - p) * ln_n), ln_n))
         return Decision::DOWN;
     return Decision::STAY;
@@ -50,6 +58,8 @@ BenchmarkResult sigcGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1
         int i = 0;
         while (i < n) {
             histories[i]->add(xt1.bits[i]);
+
+            // Check subsequences for significance
             for (HistoryTriple &h : histories[i]->get_subsequences()) {
                 auto s = sig(pt.p[i], h);
 
@@ -60,6 +70,8 @@ BenchmarkResult sigcGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1
                     pt.update_frequency(i, 1 - 1.0 / n);
                 else if (s == Decision::DOWN) // to be explicit
                     pt.update_frequency(i, 1.0 / n);
+
+                // Reset history after a significant update
                 histories[i]->wipe();
                 break;
             }

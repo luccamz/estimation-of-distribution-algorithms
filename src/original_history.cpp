@@ -15,7 +15,11 @@ void OriginalHistory::add(uint8_t b) {
 }
 
 void OriginalHistory::consolidate() {
-    // algorithm 2
+    // Implements Algorithm 2: Consolidate the linked list.
+    // We merge two consecutive nodes if they share the same size (m),
+    // if and only if there are three consecutive nodes of the same size,
+    // ensuring we maintain an exponentially increasing history structure.
+
     Node *curr = L;
     bool alreadySeenDouble = false;
     while (curr->next != nullptr) {
