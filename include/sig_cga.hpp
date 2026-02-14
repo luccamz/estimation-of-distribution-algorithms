@@ -3,11 +3,11 @@
 
 class sigcGA : public Optimizer {
   public:
-    sigcGA(bool simplified_history = true);
+    sigcGA(int prob_size, bool simplified_history = true);
     BenchmarkResult run(FitnessFunction fitness_func,
                         TerminationCriterion termination_criterion) override;
     ~sigcGA() override;
 
   private:
-    History *history;
+    std::vector<History *> histories;
 };
