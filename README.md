@@ -8,7 +8,7 @@ This repository contains C++ implementations of:
 
 These algorithms are evaluated on **OneMax**, **LeadingOnes**, and **JumpK** benchmarks.
 
-## 📂 Project Structure
+## Project Structure
 
 * `src/`: C++ source code (Implementations).
 * `include/`: Header files (Interfaces).
@@ -17,7 +17,7 @@ These algorithms are evaluated on **OneMax**, **LeadingOnes**, and **JumpK** ben
 * `plots/`: Generated PDF plots appear here.
 * `results.csv`: Raw experimental data.
 
-## 🚀 Quick Start (Recommended)
+## Quick Start (Recommended)
 
 The easiest way to run the project is using the Python automation script, which handles compilation (via CMake) and parallel execution.
 
@@ -56,7 +56,7 @@ The easiest way to run the project is using the Python automation script, which 
 
 ---
 
-## 🛠 Manual Build Instructions
+## Manual Build Instructions
 
 If you prefer to compile and run the C++ executable manually:
 
@@ -82,7 +82,7 @@ cmake --build . --config Release
 
 ---
 
-## ⚙️ Configuration (`experiments_config.json`)
+## Configuration (`experiments_config.json`)
 
 You can modify experiment parameters without changing code by editing `experiments_config.json`.
 
@@ -99,16 +99,16 @@ Example snippet:
 }
 ```
 
-## 📊 Benchmarks & Algorithms Details
+## Benchmarks & Algorithms Details
 
 1. **Algorithms**:
 
 * **sig-cGA**: Implements **Equation (3)** for significance testing and **Algorithm 1** from the project description. Includes both *Original* (linked list) and *Simplified* (counter) history variants.
-* **cGA**: Standard frequency update rule $p_i \leftarrow p_i \pm 1/K$.
+* **cGA**: Standard frequency update rule $p_i^{(t+1)} \leftarrow p_i^{(t)} + 1/K (x_i^{(t,1)}-x_i^{(t,2)})$.
 * **(1+1) EA**: Uses standard bit mutation with geometric distribution optimization for $O(n \log n)$ runtime.
 
 2. **Problems**:
 
 * **OneMax**: Linear slope, $O(n \log n)$ difficulty.
 * **LeadingOnes**: Gradient only on prefix, $O(n^2)$ difficulty.
-* **JumpK**: Valley crossing problem. $2^{n^{\Omega(1)}}$ difficulty for constant $k$, and $\Omega(n^2)$ for $k=O(1)$? (Adjust as needed.)
+* **$Jump_K$**: Valley crossing problem. $O(n^k)$ difficulty.
