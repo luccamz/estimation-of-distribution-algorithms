@@ -1,3 +1,4 @@
+#include "frequency_vector.hpp"
 #include "individual.hpp"
 
 using FitnessFunction = double (*)(const Individual &);

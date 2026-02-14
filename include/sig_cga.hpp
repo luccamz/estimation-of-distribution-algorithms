@@ -1,4 +1,3 @@
-#include "frequency_vector.hpp"
 #include "history.hpp"
 #include "optimizer.hpp"
 #include <cstdint>

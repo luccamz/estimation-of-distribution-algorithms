@@ -1,4 +1,3 @@
-#include "frequency_vector.hpp"
 #include "optimizer.hpp"
 
 class cGA : public Optimizer {
