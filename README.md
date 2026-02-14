@@ -1,56 +1,62 @@
-# Estimation-of-Distribution Algorithms (EDAs) Optimization Project
+# Estimation of Distribution Algorithms (EDAs)
 
-<!--toc:start-->
-- [Estimation-of-Distribution Algorithms (EDAs) Optimization Project](#estimation-of-distribution-algorithms-edas-optimization-project)
-  - [Overview](#overview)
-  - [Implemented Algorithms](#implemented-algorithms)
-  - [Benchmarks](#benchmarks)
-  - [Requirements](#requirements)
-  - [Build Instructions](#build-instructions)
-  - [Experimental Setup](#experimental-setup)
-  - [Project Structure](#project-structure)
-<!--toc:end-->
+This repository contains C++ implementations of **$(1+1)$ EA**, **Compact Genetic Algorithm (cGA)**, and **Significance-Based cGA (sig-cGA)**. These algorithms are evaluated on **$\textsc{OneMax}$**, **$\textsc{LeadingOnes}$**, and **$\textsc{Jump}(k)$** benchmarks to analyze runtime performance and scalability. Conducted for the **CSC_42021_EP** course.
 
-## Overview
+## Structure
 
-This project implements and studies the **significance-based compact genetic algorithm (sig-cGA)**.
-We evaluate its performance against the **compact genetic algorithm (cGA)** and the **(1+1) evolutionary algorithm (EA)** across various pseudo-Boolean benchmark functions.
-
-## Implemented Algorithms
-
-1. **sig-cGA**: An EDA using a significance-based probabilistic model update.
-2. **cGA**: A classic EDA utilizing a hypothetical population size $K$.
-3. **(1+1) EA**: A baseline evolutionary algorithm using standard bit mutation.
-
-## Benchmarks
-
-The algorithms are evaluated on the following functions with an all-1s optimum:
-
-- **OneMax**: Measures the number of 1s in a bit string.
-- **LeadingOnes**: Counts the number of consecutive 1s starting from the first bit.
-- **Jump**: A OneMax-style function with a challenging plateau of local optima.
+```text
+.
+├── include/              # Interfaces (cga.hpp, sig_cga.hpp, etc.)
+├── src/                  # Implementation (main.cpp, *.cpp)
+├── plots/                # Output PDF plots
+├── reproduce_results.py  # Automation script
+├── requirements.txt      # Python dependencies
+└── results.csv           # Generated data
+```
 
 ## Requirements
 
-- C++17 or higher
-- CMake (minimum version 3.10)
+* **C++**: Compiler supporting **C++17**, **CMake 3.10+**.
+* **Python**: **3.8+** with `pandas`, `seaborn`, `matplotlib`.
 
-## Build Instructions
+## Usage
 
-1. Create a build directory: `mkdir build && cd build`
-2. Configure the project: `cmake ..`
-3. Build the executable: `cmake --build .`
-4. Run experiments: `./algo_exec`
+### Option 1: Automated Pipeline (Recommended)
 
-## Experimental Setup
+Builds the project, runs benchmarks, and generates plots.
 
-- **Reproducibility**: All experiments use fixed seeds for random number generators.
-- **Problem Sizes**: Minimum $n = 100$.
-- **Metrics**: We measure the number of fitness function evaluations until the global optimum is found.
+```bash
+# 1. Setup Environment
+python -m venv venv
+source venv/bin/activate  # Windows: .\venv\Scripts\activate
+pip install -r requirements.txt
 
-## Project Structure
+# 2. Run Pipeline
+python reproduce_results.py
+```
 
-- `src/`: Core algorithm implementations and benchmark definitions.
-- `include/`: Header files for data structures [Individuals, Frequency Vectors].
-- `results/`: CSV files containing experimental data.
-- `report.pdf`: Detailed scientific report and analysis of findings.
+### Option 2: Manual Build
+
+```bash
+mkdir build && cd build
+cmake -DCMAKE_BUILD_TYPE=Release ..
+cmake --build . --config Release
+./algo_exec > ../results.csv
+```
+
+## Algorithms & Benchmarks
+
+* **Algorithms**:
+  * **$(1+1)$ EA**: Baseline evolutionary algorithm.
+  * **cGA**: Standard compact Genetic Algorithm.
+  * **sig-cGA**: Reduces noise using history. Variants: *Simplified* (counts) and *Original* (subsequences).
+
+* **Benchmarks**:
+  * **$\textsc{OneMax}$**:
+  * **$\textsc{LeadingOnes}$**:
+  * **$\textsc{Jump}(k)$**: Multimodal valley of size $k$.
+
+## Results
+
+* **Data**: `results.csv` contains raw runtime metrics.
+* **Plots**: `plots/` contains scaling analysis (`runtime_scaling.pdf`) and success probabilities (`success_rates.pdf`).
