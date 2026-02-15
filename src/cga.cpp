@@ -20,7 +20,7 @@ BenchmarkResult cGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1993
             std::swap(xt1, xt2);
         int i = 0;
         while (i < n) {
-            pt.update_frequency(i, pt.p[i] + (xt1.bits[i] - xt2.bits[i]) / K);
+            pt.update_frequency(i, pt.p[i] + (static_cast<double>(xt1.bits[i]) - static_cast<double>(xt2.bits[i])) / K);
             i++;
         }
         curr_fitness = xt1.fitness;
