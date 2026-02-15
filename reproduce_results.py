@@ -12,6 +12,7 @@ import math
 import threading
 import time
 import itertools
+import re
 from tqdm import tqdm
 
 # --- Configuration ---
@@ -185,7 +186,7 @@ def run_experiments():
 
     with multiprocessing.Pool(num_workers) as pool:
         # Create the progress bar object manually so we can pass it to the spinner
-        pbar = tqdm(total=total_tasks, unit="task", desc="Progress", ncols=90)
+        pbar = tqdm(total=total_tasks, unit="task", desc="Progress")
 
         # Start the spinner thread
         stop_spinner = threading.Event()
@@ -233,6 +234,31 @@ def generate_plots():
 
     PLOTS_DIR.mkdir(exist_ok=True)
 
+    def label_sort_key(label):
+        # (1+1) EA always first
+        if "1+1" in label:
+            return (0, 0, 0)
+
+        # cGA, sorted by K multiplier DESCENDING (High K first)
+        if label.startswith("cGA"):
+            match = re.search(r"approx\s*([\d\.]+)", label)
+            k_mult = float(match.group(1)) if match else 0
+            return (1, -k_mult, 0)
+
+        # sig-cGA
+        # Primary: Epsilon DESCENDING (High Epsilon first)
+        # Secondary: Variant (Original first)
+        if label.startswith("sig-cGA"):
+            is_simplified = "Simplified" in label
+            match = re.search(r"epsilon=([\d\.]+)", label)
+            eps = float(match.group(1)) if match else 0
+
+            return (2, -eps, 1 if is_simplified else 0)
+
+        return (99, 0, 0)
+
+    ordered_labels = sorted(df["Label"].unique(), key=label_sort_key)
+
     for problem in df["Problem"].unique():
         print(f"Plotting {problem}...")
         prob_df = df[df["Problem"] == problem]
@@ -247,7 +273,9 @@ def generate_plots():
                 x="N",
                 y="Evaluations",
                 hue="Label",
+                hue_order=ordered_labels,
                 style="Label",
+                style_order=ordered_labels,
                 markers=True,
                 dashes=False,
                 errorbar="sd",
@@ -258,7 +286,6 @@ def generate_plots():
             ax.set_xscale("log")
             ax.set_yscale("log")
 
-            # Smart ticks: only show relevant N values
             ax.set_xticks(unique_n)
             ax.get_xaxis().set_major_formatter(ScalarFormatter())
             ax.minorticks_off()
@@ -274,7 +301,13 @@ def generate_plots():
         # Success Plot
         plt.figure(figsize=(10, 6))
         success_rates = prob_df.groupby(["Label", "N"])["Success"].mean().reset_index()
-        ax = sns.barplot(data=success_rates, x="N", y="Success", hue="Label")
+        ax = sns.barplot(
+            data=success_rates,
+            x="N",
+            y="Success",
+            hue="Label",
+            hue_order=ordered_labels,
+        )
         ax.set_title(rf"Success Rates: {problem}", pad=15, fontweight="bold")
         ax.set_ylim(0, 1.05)
         plt.legend(bbox_to_anchor=(1.02, 1), loc="upper left", title="Configuration")
