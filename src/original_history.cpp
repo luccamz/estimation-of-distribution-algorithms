@@ -38,6 +38,8 @@ void OriginalHistory::consolidate() {
             } else {
                 alreadySeenDouble = true;
             }
+        } else {
+            alreadySeenDouble = false; // reset if sizes differ
         }
         curr = next;
     }
