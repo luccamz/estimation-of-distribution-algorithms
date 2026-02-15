@@ -22,7 +22,3 @@ inline double jump(const Individual &ind, int k = 3) {
         return n - ones_count; // Penalize for being in the gap
     }
 }
-
-inline bool optimal_or_max_evals(int curr_evaluations, double fitness, int max_evals = 1000, double opt_fitness = 100) {
-    return curr_evaluations >= max_evals || fitness >= opt_fitness;
-}
