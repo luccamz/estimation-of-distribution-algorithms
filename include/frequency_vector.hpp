@@ -20,12 +20,10 @@ struct FrequencyVector {
     }
 
     // Samples an individual based on independent probabilities
-    Individual sample(std::mt19937 &gen) {
-        Individual ind(n);
+    void sample(std::mt19937 &gen, Individual &ind) {
         std::uniform_real_distribution<double> dist(0.0, 1.0);
         for (int i = 0; i < n; ++i) {
             ind.bits[i] = (dist(gen) < p[i]) ? 1 : 0;
         }
-        return ind;
     }
 };

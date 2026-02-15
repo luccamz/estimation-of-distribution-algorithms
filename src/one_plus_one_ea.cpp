@@ -5,7 +5,8 @@ BenchmarkResult OnePlusOneEA::run(FitnessFunction f, TerminationCriterion tc, st
 
     // Algorithm 4, (1+1) EA
     auto p = FrequencyVector(n);
-    auto xt = p.sample(gen); // individual chosen uniformly at random
+    auto xt = Individual(n);
+    p.sample(gen, xt); // individual chosen uniformly at random
 
     xt.fitness = f(xt);
     int fitness_evals = 1;
