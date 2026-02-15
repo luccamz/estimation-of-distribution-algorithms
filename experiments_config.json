@@ -1,6 +1,6 @@
 {
     "common_settings": {
-        "repetitions": 30
+        "repetitions": 5
     },
     "algorithms": {
         "1+1_EA": {
