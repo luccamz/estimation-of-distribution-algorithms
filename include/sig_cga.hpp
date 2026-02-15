@@ -10,6 +10,7 @@ class sigcGA : public Optimizer {
 
   private:
     double eps;
+    double ln_n;
     std::vector<History *> histories;
     enum class Decision : uint8_t { UP, DOWN, STAY };
     Decision sig(double p, HistoryTriple &H);

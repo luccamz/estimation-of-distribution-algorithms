@@ -6,6 +6,7 @@
 
 sigcGA::sigcGA(int prob_size, double eps_val, bool simplified_history) {
     eps = eps_val;
+    ln_n = std::log(prob_size);
     histories.reserve(prob_size);
     if (simplified_history) {
         for (int i = 0; i < prob_size; ++i) {
@@ -23,7 +24,6 @@ sigcGA::Decision sigcGA::sig(double p, HistoryTriple &H) {
     // We compare the number of observed 1s (or 0s) against the expected mean
     // plus a deviation term based on the Chernoff bound.
 
-    auto ln_n = std::log(histories.size());
     auto [h1, h0, m] = H;
 
     // Case 1: Frequency is low (<= 0.5), check for significant increase (UP)
