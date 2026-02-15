@@ -9,7 +9,7 @@ BenchmarkResult cGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1993
     auto pt = FrequencyVector(n);
     auto xt1 = Individual(n);
     auto xt2 = Individual(n);
-    auto curr_fitness = f(xt1);
+    auto curr_fitness = 0.0;
     while (!tc(fitness_evals, curr_fitness)) {
         pt.sample(gen, xt1);
         pt.sample(gen, xt2);
