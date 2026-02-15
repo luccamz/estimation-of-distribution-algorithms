@@ -58,8 +58,15 @@ void OriginalHistory::wipe() {
 std::vector<HistoryTriple> OriginalHistory::get_subsequences() const {
     std::vector<HistoryTriple> subsequences;
     Node *curr = L;
+
+    int cum_h1 = 0;
+    int cum_h0 = 0;
+    int cum_m = 0;
     while (curr != nullptr) {
-        subsequences.push_back(curr->H);
+        cum_h1 += curr->H.h1;
+        cum_h0 += curr->H.h0;
+        cum_m += curr->H.m;
+        subsequences.push_back({cum_h1, cum_h0, cum_m});
         curr = curr->next;
     }
     return subsequences;
