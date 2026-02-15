@@ -9,6 +9,10 @@ from pathlib import Path
 import multiprocessing
 import json
 import math
+import threading
+import time
+import itertools
+from tqdm import tqdm
 
 # --- Configuration ---
 BUILD_DIR = Path("build")
@@ -156,6 +160,16 @@ def run_worker(task):
         return (task["id"], [])
 
 
+def spinner_animation(pbar, stop_event):
+    """Background thread to animate a spinner in the progress bar."""
+    spinner = itertools.cycle(["|", "/", "-", "\\"])
+    while not stop_event.is_set():
+        # Use the lock to ensure we don't write to stdout at the exact same time as an update
+        with pbar.get_lock():
+            pbar.set_postfix_str(f"Processing {next(spinner)}", refresh=True)
+        time.sleep(0.1)
+
+
 def run_experiments():
     print(f"--- Running Experiments from {CONFIG_FILE} ---")
     tasks = generate_tasks()
@@ -170,12 +184,32 @@ def run_experiments():
     )
 
     with multiprocessing.Pool(num_workers) as pool:
-        for i, (task_id, lines) in enumerate(pool.imap_unordered(run_worker, tasks), 1):
-            if lines:
-                results.extend(lines)
-                print(f"[{i}/{total_tasks}] Finished: {task_id}")
-            else:
-                print(f"[{i}/{total_tasks}] FAILED:   {task_id}")
+        # Create the progress bar object manually so we can pass it to the spinner
+        pbar = tqdm(total=total_tasks, unit="task", desc="Progress", ncols=90)
+
+        # Start the spinner thread
+        stop_spinner = threading.Event()
+        spinner_thread = threading.Thread(
+            target=spinner_animation, args=(pbar, stop_spinner), daemon=True
+        )
+        spinner_thread.start()
+
+        try:
+            # imap_unordered yields results as soon as they are ready
+            for task_id, lines in pool.imap_unordered(run_worker, tasks):
+                if lines:
+                    results.extend(lines)
+                else:
+                    with pbar.get_lock():
+                        tqdm.write(f"FAILED: {task_id}")
+
+                # Update main progress
+                pbar.update(1)
+        finally:
+            # Stop the spinner and close bar
+            stop_spinner.set()
+            spinner_thread.join()
+            pbar.close()
 
     with open(RESULTS_FILE, "w") as f:
         f.write(header + "\n")
