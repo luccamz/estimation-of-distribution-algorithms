@@ -2,6 +2,7 @@
 #include "original_history.hpp"
 #include "simplified_history.hpp"
 #include <algorithm>
+#include <cmath>
 
 sigcGA::sigcGA(int prob_size, double eps_val, bool simplified_history) {
     eps = eps_val;
@@ -23,7 +24,7 @@ sigcGA::Decision sigcGA::sig(double p, HistoryTriple &H) {
     // plus a deviation term based on the Chernoff bound.
 
     auto ln_n = std::log(histories.size());
-    auto [m, h0, h1] = H;
+    auto [h1, h0, m] = H;
 
     // Case 1: Frequency is low (<= 0.5), check for significant increase (UP)
     // Deviation term: epsilon * max(sqrt(variance * ln n), ln n)
@@ -52,7 +53,6 @@ BenchmarkResult sigcGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1
         xt2.fitness = f(xt2);
         fitness_evals += 2; // properly count number of f calls
         if (xt1.fitness < xt2.fitness)
-            // std::swap(xt1, xt2);
             xt1 = xt2;
 
         int i = 0;
@@ -68,6 +68,7 @@ BenchmarkResult sigcGA::run(FitnessFunction f, TerminationCriterion tc, std::mt1
 
                 if (s == Decision::UP)
                     pt.update_frequency(i, 1 - 1.0 / n);
+
                 else if (s == Decision::DOWN) // to be explicit
                     pt.update_frequency(i, 1.0 / n);
 
