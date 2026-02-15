@@ -1,4 +1,5 @@
 #include "individual.hpp"
+#include <numeric>
 
 inline double one_max(const Individual &ind) { return std::accumulate(ind.bits.begin(), ind.bits.end(), 0); }
 
