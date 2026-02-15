@@ -66,7 +66,7 @@ def calculate_k(n, formula_str):
     return eval(formula_str, {"__builtins__": {}}, allowed_names)
 
 
-def generate_tasks():
+def generate_tasks(exe_path):
     if not CONFIG_FILE.exists():
         sys.exit(f"Config file {CONFIG_FILE} not found.")
 
@@ -90,6 +90,7 @@ def generate_tasks():
                 tasks.append(
                     {
                         "id": f"1+1_EA_{prob_name}_{n}",
+                        "exe_path": exe_path,
                         "args": [
                             "1+1_EA",
                             prob_name,
@@ -111,6 +112,7 @@ def generate_tasks():
                     tasks.append(
                         {
                             "id": f"cGA_{prob_name}_{n}_K{mult}",
+                            "exe_path": exe_path,
                             "args": [
                                 "cGA",
                                 prob_name,
@@ -135,6 +137,7 @@ def generate_tasks():
                         tasks.append(
                             {
                                 "id": f"{algo_id}_{prob_name}_{n}_eps{eps}",
+                                "exe_path": exe_path,
                                 "args": [
                                     algo_id,
                                     prob_name,
@@ -150,7 +153,7 @@ def generate_tasks():
 
 
 def run_worker(task):
-    exe_path = find_executable()
+    exe_path = task["exe_path"]
     cmd = [str(exe_path)] + task["args"]
     try:
         output = subprocess.check_output(cmd, text=True).strip()
@@ -173,7 +176,9 @@ def spinner_animation(pbar, stop_event):
 
 def run_experiments():
     print(f"--- Running Experiments from {CONFIG_FILE} ---")
-    tasks = generate_tasks()
+    exe_path = find_executable()
+    print(f"Executable found at: {exe_path}")
+    tasks = generate_tasks(exe_path)
     total_tasks = len(tasks)
     num_workers = min(multiprocessing.cpu_count(), total_tasks)
     print(f"Generated {total_tasks} tasks.")
