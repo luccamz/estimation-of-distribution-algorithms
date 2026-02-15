@@ -1,6 +1,6 @@
 {
     "common_settings": {
-        "repetitions": 5
+        "repetitions": 30
     },
     "algorithms": {
         "1+1_EA": {
@@ -47,7 +47,7 @@
                 300
             ],
             "budget_type": "quadratic",
-            "budget_multiplier": 15,
+            "budget_multiplier": 50,
             "k_formula": "n * (log(n)**2)"
         },
         "JumpK2": {
