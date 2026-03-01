@@ -4,10 +4,10 @@
     },
     "algorithms": {
         "1+1_EA": {
-            "enabled": true
+            "enabled": false
         },
         "cGA": {
-            "enabled": true,
+            "enabled": false,
             "parameter_name": "K",
             "multipliers": [
                 0.25,
@@ -37,7 +37,7 @@
                 500
             ],
             "budget_type": "linear",
-            "budget_multiplier": 100,
+            "budget_multiplier": 500,
             "k_formula": "sqrt(n) * log(n)"
         },
         "LeadingOnes": {
@@ -47,7 +47,7 @@
                 300
             ],
             "budget_type": "quadratic",
-            "budget_multiplier": 50,
+            "budget_multiplier": 200,
             "k_formula": "n * (log(n)**2)"
         },
         "JumpK2": {
@@ -56,7 +56,7 @@
                 200
             ],
             "budget_type": "fixed",
-            "budget_fixed": 200000,
+            "budget_fixed": 500000,
             "k_formula": "sqrt(n) * log(n)"
         },
         "JumpK3": {
@@ -65,7 +65,7 @@
                 200
             ],
             "budget_type": "fixed",
-            "budget_fixed": 500000,
+            "budget_fixed": 2000000,
             "k_formula": "sqrt(n) * log(n)"
         }
     }
