@@ -26,7 +26,7 @@ int main(int argc, char *argv[]) {
     std::string prob_name = argv[2];
     int n = std::stoi(argv[3]);
     double param = std::stod(argv[4]);
-    int repetitions = std::stoi(argv[5]);
+    int seed = std::stoi(argv[5]);
     int max_evals = std::stoi(argv[6]);
 
     // 1. Resolve Problem
@@ -49,33 +49,31 @@ int main(int argc, char *argv[]) {
         return fitness >= n || evals >= max_evals;
     };
 
-    // 3. Run Repetitions
-    for (int r = 0; r < repetitions; ++r) {
-        std::mt19937 gen(42 + r); // Reproducible seed
-        BenchmarkResult res = {0, 0.0};
-        std::string label = "Standard"; // Default label
+    // 3. Run Single Repetition
+    std::mt19937 gen(seed); // Reproducible seed
+    BenchmarkResult res = {0, 0.0};
+    std::string label = "Standard"; // Default label
 
-        if (algo_name == "1+1_EA") {
-            OnePlusOneEA solver(n);
-            res = solver.run(func, term_crit, gen);
-        } else if (algo_name == "cGA") {
-            cGA solver(n, param);
-            res = solver.run(func, term_crit, gen);
-        } else if (algo_name == "sig-cGA-Original") {
-            sigcGA solver(n, param, false);
-            res = solver.run(func, term_crit, gen);
-        } else if (algo_name == "sig-cGA-Simplified") {
-            sigcGA solver(n, param, true);
-            res = solver.run(func, term_crit, gen);
-        } else {
-            std::cerr << "Unknown algorithm: " << algo_name << "\n";
-            return 1;
-        }
-
-        // Output CSV format: Algorithm,Problem,N,Param,Repetition,Evaluations,Success,BestFitness
-        std::cout << algo_name << "," << prob_name << "," << n << "," << param << "," << r << "," << res.evaluations
-                  << "," << (res.best_fitness >= n) << "," << res.best_fitness << "\n";
+    if (algo_name == "1+1_EA") {
+        OnePlusOneEA solver(n);
+        res = solver.run(func, term_crit, gen);
+    } else if (algo_name == "cGA") {
+        cGA solver(n, param);
+        res = solver.run(func, term_crit, gen);
+    } else if (algo_name == "sig-cGA-Original") {
+        sigcGA solver(n, param, false);
+        res = solver.run(func, term_crit, gen);
+    } else if (algo_name == "sig-cGA-Simplified") {
+        sigcGA solver(n, param, true);
+        res = solver.run(func, term_crit, gen);
+    } else {
+        std::cerr << "Unknown algorithm: " << algo_name << "\n";
+        return 1;
     }
+
+    // Output CSV format: Algorithm,Problem,N,Param,Evaluations,Success,BestFitness
+    std::cout << algo_name << "," << prob_name << "," << n << "," << param << "," << res.evaluations << ","
+              << (res.best_fitness >= n) << "," << res.best_fitness << "\n";
 
     return 0;
 }

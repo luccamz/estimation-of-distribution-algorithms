@@ -87,21 +87,22 @@ def generate_tasks(exe_path):
 
             # 1. (1+1) EA
             if config["algorithms"]["1+1_EA"]["enabled"]:
-                tasks.append(
-                    {
-                        "id": f"1+1_EA_{prob_name}_{n}",
-                        "exe_path": exe_path,
-                        "args": [
-                            "1+1_EA",
-                            prob_name,
-                            str(n),
-                            "0",
-                            str(reps),
-                            str(max_evals),
-                        ],
-                        "meta": {"label": "$(1+1)$ EA"},
-                    }
-                )
+                for i in range(reps):
+                    tasks.append(
+                        {
+                            "id": f"1+1_EA_{prob_name}_{n}",
+                            "exe_path": exe_path,
+                            "args": [
+                                "1+1_EA",
+                                prob_name,
+                                str(n),
+                                "0",
+                                str(42 + i),
+                                str(max_evals),
+                            ],
+                            "meta": {"label": "$(1+1)$ EA"},
+                        }
+                    )
 
             # 2. cGA
             if config["algorithms"]["cGA"]["enabled"]:
@@ -109,23 +110,24 @@ def generate_tasks(exe_path):
                 multipliers = config["algorithms"]["cGA"]["multipliers"]
                 for mult in multipliers:
                     k_val = k_base * mult
-                    tasks.append(
-                        {
-                            "id": f"cGA_{prob_name}_{n}_K{mult}",
-                            "exe_path": exe_path,
-                            "args": [
-                                "cGA",
-                                prob_name,
-                                str(n),
-                                str(k_val),
-                                str(reps),
-                                str(max_evals),
-                            ],
-                            "meta": {
-                                "label": f"cGA ($K \\approx {mult}\\cdot K_{{base}}$)"
-                            },
-                        }
-                    )
+                    for i in range(reps):
+                        tasks.append(
+                            {
+                                "id": f"cGA_{prob_name}_{n}_K{mult}",
+                                "exe_path": exe_path,
+                                "args": [
+                                    "cGA",
+                                    prob_name,
+                                    str(n),
+                                    str(k_val),
+                                    str(42 + i),
+                                    str(max_evals),
+                                ],
+                                "meta": {
+                                    "label": f"cGA ($K \\approx {mult}\\cdot K_{{base}}$)"
+                                },
+                            }
+                        )
 
             # 3. sig-cGA
             if config["algorithms"]["sig-cGA"]["enabled"]:
@@ -134,21 +136,24 @@ def generate_tasks(exe_path):
                 for var in variants:
                     algo_id = f"sig-cGA-{var}"
                     for eps in eps_values:
-                        tasks.append(
-                            {
-                                "id": f"{algo_id}_{prob_name}_{n}_eps{eps}",
-                                "exe_path": exe_path,
-                                "args": [
-                                    algo_id,
-                                    prob_name,
-                                    str(n),
-                                    str(eps),
-                                    str(reps),
-                                    str(max_evals),
-                                ],
-                                "meta": {"label": f"sig-cGA {var} ($\\epsilon={eps}$)"},
-                            }
-                        )
+                        for i in range(reps):
+                            tasks.append(
+                                {
+                                    "id": f"{algo_id}_{prob_name}_{n}_eps{eps}",
+                                    "exe_path": exe_path,
+                                    "args": [
+                                        algo_id,
+                                        prob_name,
+                                        str(n),
+                                        str(eps),
+                                        str(42 + i),
+                                        str(max_evals),
+                                    ],
+                                    "meta": {
+                                        "label": f"sig-cGA {var} ($\\epsilon={eps}$)"
+                                    },
+                                }
+                            )
     return tasks
 
 
@@ -185,9 +190,7 @@ def run_experiments():
     print(f"Running on {num_workers} parallel threads...\n")
 
     results = []
-    header = (
-        "Algorithm,Problem,N,Param,Repetition,Evaluations,Success,BestFitness,Label"
-    )
+    header = "Algorithm,Problem,N,Param,Evaluations,Success,BestFitness,Label"
 
     with multiprocessing.Pool(num_workers) as pool:
         # Create the progress bar object manually so we can pass it to the spinner
